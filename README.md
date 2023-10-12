@@ -25,3 +25,15 @@ BQ_PRIVATEKEY_CONTENT = ''
 BQ_CLIENT_EMAIL = ''
 BQ_CLIENT_ID = ''
 BQ_CLIENT_X509_URI = ''
+
+An example of request object :
+
+{
+    "Operation" : "update",
+    "HardId" : "249f1c12-ef44-43cb-b1c1-35671b089a08",
+    "Email" : "sven.peeters@email.com",
+    "IdList" : [
+        {"IdType" : 1,"Value" : "googleid99"},
+        {"IdType" : 2,"Value" : "exponea99"}
+    ]
+}
