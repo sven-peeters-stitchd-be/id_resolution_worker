@@ -1,0 +1,11 @@
+name = "id_resolution_worker"
+main = "src/index.ts"
+compatibility_date = "2023-10-02"
+
+[vars]
+BQ_ACCOUNT_TYPE = "service_account"
+BQ_PROJECTID = "gtm-wwzmv95-otm1z"
+BQ_AUTH_URI = "https://accounts.google.com/o/oauth2/auth"
+BQ_TOKEN_URI = "https://oauth2.googleapis.com/token"
+BQ_AUTH_X509_URI = "https://www.googleapis.com/oauth2/v1/certs"
+BQ_UNIVERSE_DOMAIN = "googleapis.com"
