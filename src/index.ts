@@ -43,6 +43,10 @@ export interface Env {
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 
+		if (request.method == "OPTIONS") {
+			return await this.optionRequest(request);
+		}
+
 		if (request.method !== "POST")
 			return new Response("Only POST method is supported");
 
@@ -69,8 +73,23 @@ export default {
 		{
 			headers: {
 			  "content-type": "application/json;charset=UTF-8",
+			  "Access-Control-Allow-Origin" : request.headers.get("Origin"),
 			}
 		});
 		
 	},
+
+	async optionRequest(request: Request): Promise<Response> {
+		return new Response(
+			'',
+			{
+				headers: {
+					'content-type': 'application/json;charset=UTF-8',
+					'Access-Control-Allow-Origin': request.headers.get("Origin"),
+					'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
+					'Access-Control-Allow-Headers': '*',
+				}
+			}
+		);
+	}
 };

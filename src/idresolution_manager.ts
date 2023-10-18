@@ -35,11 +35,11 @@ export class IDResolutionManager {
                 case "PURGE":
                     return this.purgeDatabase();
                 default:
-                    return new IDResolutionManagerResponse(this.hardid,false,"Unsupported operation",null);
+                    return new IDResolutionManagerResponse(this.hardid,false,"Unsupported operation",this.email,null);
             }
             
         } catch (error : any) {
-            return new IDResolutionManagerResponse(this.hardid,false,"Unhandled exception : " + error,null);
+            return new IDResolutionManagerResponse(this.hardid,false,"Unhandled exception : " + error,this.email,null);
         }
 
         
@@ -51,10 +51,10 @@ export class IDResolutionManager {
         try {
 
             let response = await this.runSQLQuery("SELECT * FROM " + this.datasetName + ".id_types");
-            return new IDResolutionManagerResponse(this.hardid,true,"",response);
+            return new IDResolutionManagerResponse(this.hardid,true,"",this.email,response);
             
         } catch (error) {
-            return new IDResolutionManagerResponse(this.hardid,false,"Unable to get id list : " + error,null);
+            return new IDResolutionManagerResponse(this.hardid,false,"Unable to get id list : " + error,this.email,null);
         }
         
     }
@@ -80,10 +80,10 @@ export class IDResolutionManager {
                 }
             }
 
-            return new IDResolutionManagerResponse(this.hardid,true,"",null);
+            return new IDResolutionManagerResponse(this.hardid,true,"",this.email,null);
             
         } catch (error) {
-            return new IDResolutionManagerResponse(this.hardid,false,"Unable to upsert : " + error,null);
+            return new IDResolutionManagerResponse(this.hardid,false,"Unable to upsert : " + error,this.email,null);
         }        
 
     }
@@ -95,10 +95,10 @@ export class IDResolutionManager {
             await this.runSQLQuery("TRUNCATE TABLE " + this.datasetName + ".hard_id_list");
             await this.runSQLQuery("TRUNCATE TABLE " + this.datasetName + ".soft_id_list");
 
-            return new IDResolutionManagerResponse(this.hardid,true,"",null);
+            return new IDResolutionManagerResponse(this.hardid,true,"",this.email,null);
             
         } catch (error) {
-            return new IDResolutionManagerResponse(this.hardid,false,"Unable to purge : " + error,null);
+            return new IDResolutionManagerResponse(this.hardid,false,"Unable to purge : " + error,this.email,null);
         }
         
     }
@@ -109,11 +109,12 @@ export class IDResolutionManager {
             // Check if we can find the email adres
             const queryResultEmail = await this.runSQLQuery("SELECT hard_id_list_id,email FROM " + this.datasetName + ".hard_id_list where email = '" + request.Email + "'")
             if (queryResultEmail && queryResultEmail.length > 0) {
+
                 this.hardid = queryResultEmail[0].hard_id_list_id;
                 this.email = queryResultEmail[0].email;
 
                 if (!request.HardId) {
-                    // Merge all possible softid's to this new hard id
+                    // Merge all existing matching softid's to this new hard id
 
                     let processedHardIds: string [] = [this.hardid];
 
@@ -282,16 +283,18 @@ export class IDResolutionManagerRequest {
 export class IDResolutionManagerResponse {
 
     public HardId : string = "";
+    public Email : string = "";
     public Success : boolean = false;
     public ErrorMessage : string = "";
     public QueryResult : any;
 
-    constructor(hardid : string,success : boolean, errormessage : string, queryresult : any)
+    constructor(hardid : string,success : boolean, errormessage : string,email : string,  queryresult : any)
     {
         this.HardId = hardid;
         this.Success = success;
         this.ErrorMessage = errormessage;
         this.QueryResult = queryresult;
+        this.Email = email;
     }
 }
 
