@@ -29,9 +29,11 @@ export class IDResolutionManager {
 
             switch (request.Operation.toUpperCase()) {
                 case "GETIDLIST":
-                    return this.getIdList();                    
+                    return this.getIdList();
                 case "UPDATE":
                     return this.upsertIdentity(request);
+                case "GET":
+                    return this.getIdentities(request);
                 case "PURGE":
                     return this.purgeDatabase();
                 default:
@@ -81,6 +83,34 @@ export class IDResolutionManager {
             }
 
             return new IDResolutionManagerResponse(this.hardid,true,"",this.email,null);
+            
+        } catch (error) {
+            return new IDResolutionManagerResponse(this.hardid,false,"Unable to upsert : " + error,this.email,null);
+        }        
+
+    }
+
+    private async getIdentities(request : IDResolutionManagerRequest) : Promise<IDResolutionManagerResponse> {
+
+        try {
+            //Fetch current hardid if passed along            
+            await this.fetchCurrentHardId(request);
+            if (this.hardid) {
+                // Found hard id, getting all soft id's
+                let idList : IDResolutionManagerResponseIdValue[] = [];
+                const queryResultSoftId= await this.runSQLQuery("SELECT S.id_type,S.id_value,T.id_type_name FROM " + this.datasetName + ".soft_id_list S INNER JOIN  " + this.datasetName + ".id_types T ON S.id_type = T.id_type_id where S.hard_id_list_id = '" + this.hardid + "'");
+                for (let index = 0; index < queryResultSoftId.length; index++) {
+                    let id : IDResolutionManagerResponseIdValue = new IDResolutionManagerResponseIdValue();
+                    id.IdType = queryResultSoftId[index].id_type;
+                    id.IdName = queryResultSoftId[index].id_type_name;
+                    id.Value = queryResultSoftId[index].id_value;
+                    idList.push(id);
+                }
+                return new IDResolutionManagerResponse(this.hardid,true,"",this.email,null,idList);
+
+            } else {
+                return new IDResolutionManagerResponse(this.hardid,true,"",this.email,null);
+            }
             
         } catch (error) {
             return new IDResolutionManagerResponse(this.hardid,false,"Unable to upsert : " + error,this.email,null);
@@ -271,6 +301,12 @@ export class IDResolutionManagerRequestIdValue {
     public Value: string = "";
 }
 
+export class IDResolutionManagerResponseIdValue {
+    public IdType : number = 0;
+    public IdName : string = "";
+    public Value: string = "";
+}
+
 export class IDResolutionManagerRequest {
 
     public Operation : string = "";
@@ -287,14 +323,17 @@ export class IDResolutionManagerResponse {
     public Success : boolean = false;
     public ErrorMessage : string = "";
     public QueryResult : any;
+    public IdList : IDResolutionManagerResponseIdValue[] = [];
 
-    constructor(hardid : string,success : boolean, errormessage : string,email : string,  queryresult : any)
+    constructor(hardid : string,success : boolean,errormessage : string,email : string,queryresult : any, idlist? : IDResolutionManagerResponseIdValue[])
     {
         this.HardId = hardid;
         this.Success = success;
         this.ErrorMessage = errormessage;
         this.QueryResult = queryresult;
         this.Email = email;
+        if (idlist)
+            this.IdList = idlist;
     }
 }
 

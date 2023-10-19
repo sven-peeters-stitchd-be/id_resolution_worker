@@ -37,3 +37,10 @@ An example of request object :
         {"IdType" : 2,"Value" : "exponea99"}
     ]
 }
+
+The worker supports 4 operations :
+- GetIdList : This will fetch all the id types defined in the database, including the name of the cookie they use.
+              You can use this list to fetch the necessary cookies values and send them back to this worker
+- Update : This will update the identity profile (and merge if necessary) and return the latest internal id (stored in cookie __StitchdId__) and if available it's email address
+- Get : This will fetch all known soft id's linked to the email or internal id
+- Purge : This will empty all in Bigquery except the list of id types
